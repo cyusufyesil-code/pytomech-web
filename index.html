@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PYTOMECH | Endüstriyel Yazılım Geliştirici Platformu</title>
+    <!-- Tailwind CSS'i yükle -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js Kütüphanesi (Grafik Çizimi İçin) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Inter yazı tipini yükle -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <style>
+        /* Genel stil ayarları */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0d0d; /* Daha koyu endüstriyel arka plan */
+            color: #e0e0e0; /* Açık renkli varsayılan metin */
+        }
+        /* Yeni Vurgu Renkleri: Neon Yeşil (Aydınlatma) */
+        .neon-green {
+            color: #00ff66; /* Parlak neon yeşil */
+        }
+        .bg-neon-green {
+            background-color: #00ff66;
+        }
+        .border-neon-green {
+            border-color: #00ff66;
+        }
+        
+        /* Navigasyon Çubuğu */
+        header {
+            background-color: #1a1a1a; /* Koyu gri, neredeyse siyah */
+        }
+        .nav-link {
+            @apply text-gray-400 hover:text-neon-green transition duration-300;
+        }
+
+        /* Ana Banner */
+        .banner-overlay {
+            background-color: rgba(0,0,0,0.85);
+        }
+
+        /* Proje Kartı Efekti */
+        .module-card {
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+            cursor: pointer;
+            @apply bg-gray-800 border-2 border-gray-700; 
+        }
+        .module-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 20px rgba(0, 255, 102, 0.4); /* Neon yeşil ışık efekti */
+            border-color: #00ff66;
+        }
+        .card-title {
+            /* Koyu renkli modüller üzerine açık renkli metin */
+            @apply absolute bottom-0 left-0 w-full p-6 text-center text-white font-bold text-xl bg-gradient-to-t from-black to-transparent opacity-100;
+        }
+
+        /* Topluluk Proje Kartı */
+        .project-card {
+            transition: all 0.3s ease-in-out;
+            @apply bg-gray-800 border border-gray-700 shadow-xl hover:shadow-2xl hover:border-neon-green;
+        }
+        .project-card:hover {
+            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.3); 
+        }
+
+        /* Dashboard Alanı */
+        #dashboard {
+            background-color: #000;
+        }
+        .kpi-card {
+            @apply bg-gray-800 p-3 rounded-lg border-l-4 border-gray-700;
+            transition: border-color 0.3s;
+        }
+        .kpi-card:hover {
+            border-color: #00ff66;
+        }
+
+        /* Geliştirici Bölümü */
+        #hakkimda {
+            background-color: #1a1a1a;
+        }
+
+        /* İletişim Formu */
+        .contact-box {
+            @apply bg-gray-900 border border-gray-700;
+        }
+        .contact-input {
+            @apply bg-gray-800 text-white px-4 py-3 border border-gray-600 rounded-lg focus:ring-neon-green focus:border-neon-green transition duration-150;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #111;
+        }
+
+        /* Modal stil */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.9);
+            animation: fadeIn 0.3s;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content-box {
+            background-color: #1a1a1a;
+            color: #e0e0e0;
+            margin: 10vh auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 900px;
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2); /* Neon yansıma */
+            position: relative;
+            animation: slideIn 0.3s;
+            border: 1px solid #00ff6640;
+        }
+        
+        /* Kapanma butonu */
+        .close-btn {
+            color: #00ff66;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 30px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+        .close-btn:hover {
+            color: #00e65c;
+        }
+
+        /* Kod Bloğu Stili */
+        .code-snippet {
+            background-color: #0d0d0d; /* En karanlık ton */
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            border: 1px solid #00ff6630;
+        }
+
+        /* Sözdizimi Vurgulama - VSC Dark/Monokai teması esintileri */
+        .code-snippet span.keyword { color: #569cd6; } 
+        .code-snippet span.function { color: #dcdcaa; } 
+        .code-snippet span.string { color: #ce9178; } 
+        .code-snippet span.variable { color: #00ff66; } /* Değişkenler neon yeşil! */
+        .code-snippet span.comment { color: #6a9955; } 
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideIn {
+            from { transform: translateY(-50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+    </style>
+</head>
+<body onload="initDashboard()">
+
+    <!-- Üst Gezinme Çubuğu (Header) -->
+    <header class="shadow-xl sticky top-0 z-20 bg-gray-900 border-b border-gray-700/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
+            
+            <!-- Logo - PYTOMECH -->
+            <a href="#" class="h-10 flex items-center"> 
+                <img src="https://placehold.co/100x40/000/00ff66?text=PYTOMECH" 
+                     alt="PYTOMECH Logo" 
+                     class="h-full object-contain mr-2">
+            </a>
+            
+            <nav class="hidden md:flex space-x-8 text-lg font-medium">
+                <a href="#moduller" class="nav-link">Modüller</a>
+                <a href="#projeler" class="nav-link">Projeler</a>
+                <a href="#dashboard" class="nav-link">Dashboard</a>
+                <a href="#hakkimda" class="nav-link">Geliştirici</a>
+                <a href="#iletisim" class="nav-link">Topluluk</a>
+            </nav>
+            <!-- Mobil Menü Butonu -->
+            <button id="mobile-menu-button" class="md:hidden text-neon-green p-2 rounded-md transition duration-300">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7"></path></svg>
+            </button>
+        </div>
+        <!-- Mobil Menü Açılır Alanı -->
+        <div id="mobile-menu" class="md:hidden hidden bg-gray-900 border-t border-gray-700">
+            <a href="#moduller" class="block px-4 py-2 text-base font-medium text-gray-400 hover:bg-gray-800 hover:text-neon-green" onclick="closeMobileMenu()">Modüller</a>
+            <a href="#projeler" class="block px-4 py-2 text-base font-medium text-gray-400 hover:bg-gray-800 hover:text-neon-green" onclick="closeMobileMenu()">Projeler</a>
+            <a href="#dashboard" class="block px-4 py-2 text-base font-medium text-gray-400 hover:bg-gray-800 hover:text-neon-green" onclick="closeMobileMenu()">Dashboard</a>
+            <a href="#hakkimda" class="block px-4 py-2 text-base font-medium text-gray-400 hover:bg-gray-800 hover:text-neon-green" onclick="closeMobileMenu()">Geliştirici</a>
+            <a href="#iletisim" class="block px-4 py-2 text-base font-medium text-gray-400 hover:bg-gray-800 hover:text-neon-green" onclick="closeMobileMenu()">Topluluk</a>
+        </div>
+    </header>
+
+    <!-- Ana Banner / Giriş Bölümü -->
+    <section class="relative h-[60vh] md:h-[80vh] flex items-center justify-center bg-cover bg-center" 
+             style="background-image: url('https://placehold.co/1600x900/111111/444444?text=END%C3%9CSR%C4%B0YEL_YAZILIM_PLATFORMU');">
+        <!-- Overlay (Koyu filtre) -->
+        <div class="absolute inset-0 bg-black opacity-85 banner-overlay"></div>
+        <div class="relative z-10 text-center text-white p-6 rounded-lg">
+            <h2 class="text-4xl sm:text-6xl font-extrabold mb-6 tracking-wider text-white">
+                FİKİR ÜRET, KODLA, HAYATA GEÇİR.
+            </h2>
+            <p class="text-lg sm:text-2xl font-light mb-8 text-gray-300">
+                Endüstriyel Veri Otomasyonu, Kalite Kontrol ve Üretim PI'ları için modüler Python kütüphaneleri.
+            </p>
+            <a href="#moduller" class="mt-8 inline-block bg-neon-green hover:bg-green-500 text-gray-900 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 border-2 border-neon-green">
+                Modül Kapsamını Keşfet
+            </a>
+        </div>
+    </section>
+
+    <!-- Modüller ve Çözüm Alanları Bölümü -->
+    <section id="moduller" class="py-16 md:py-24 bg-gray-900">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-white mb-12">
+                Çekirdek Modüller & Çözüm Alanları
+            </h2>
+            
+            <!-- Modül Kartları Izgarası -->
+            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+                
+                <!-- 1. Kalite Otomasyonu & Görüntü İşleme (Quality) -->
+                <div class="relative rounded-lg overflow-hidden shadow-xl module-card" 
+                     onclick="openModal('quality')">
+                    <!-- Endüstriyel görsel yer tutucusu, Neon Yeşil vurgulu -->
+                    <img src="https://placehold.co/400x500/1a1a1a/00ff66?text=QC_VISION" 
+                         alt="Kalite Kontrol Otomasyonu" 
+                         class="w-full h-72 md:h-96 object-cover opacity-80" 
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='https://placehold.co/400x500/000/444?text=QC+Y%C3%BCkleme+Hatası'">
+                    <span class="card-title">Kalite Kontrolü & Yapay Zeka (AI/ML)</span>
+                </div>
+
+                <!-- 2. Veri Otomasyonu & Haberleşme (Data Automation) -->
+                <div class="relative rounded-lg overflow-hidden shadow-xl module-card" 
+                     onclick="openModal('data')">
+                    <img src="https://placehold.co/400x300/1a1a1a/00ff66?text=PLC_COMMS" 
+                         alt="Endüstriyel Protokol Modülü" 
+                         class="w-full h-72 md:h-96 object-cover opacity-80" 
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='https://placehold.co/400x300/000/444?text=Veri+Y%C3%BCkleme+Hatası'">
+                    <span class="card-title">Veri Haberleşmesi & PLC Entegrasyonu</span>
+                </div>
+                
+                <!-- 3. Üretim Verimlilik Analizi (PI / OEE) -->
+                <div class="relative rounded-lg overflow-hidden shadow-xl module-card" 
+                     onclick="openModal('oee')">
+                    <img src="https://placehold.co/300x400/1a1a1a/00ff66?text=OEE_ANALYSIS" 
+                         alt="Zaman Serisi Veri Yönetimi" 
+                         class="w-full h-72 md:h-96 object-cover opacity-80" 
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='https://placehold.co/300x400/000/444?text=OEE+Y%C3%BCkleme+Hatası'">
+                    <span class="card-title">KPI/PI Hesaplama & Tahminsel Analiz</span>
+                </div>
+                
+                <!-- 4. Anlık Üretim Panoları (Dashboard) -->
+                <div class="relative rounded-lg overflow-hidden shadow-xl module-card" 
+                     onclick="openModal('dash')">
+                    <img src="https://placehold.co/400x350/1a1a1a/00ff66?text=REALTIME_DASH" 
+                         alt="Raporlama ve Arayüz Fonksiyonları" 
+                         class="w-full h-72 md:h-96 object-cover opacity-80" 
+                         loading="lazy"
+                         onerror="this.onerror=null; this.src='https://placehold.co/400x350/000/444?text=Dash+Y%C3%BCkleme+Hatası'">
+                    <span class="card-title">Veri Görselleştirme & Web Dashboard'lar</span>
+                </div>
+                
+            </div>
+            
+            <div class="text-center mt-12">
+                <a href="#projeler" class="inline-block border-2 border-neon-green text-neon-green hover:bg-neon-green hover:text-gray-900 font-bold py-3 px-8 rounded-full transition duration-300 transform hover:scale-105 shadow-md hover:shadow-lg">
+                    Topluluk Projelerini Gör
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Topluluk Projeleri Bölümü -->
+    <section id="projeler" class="py-16 md:py-24 bg-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-white mb-6">
+                Topluluk Projeleri: PYTOMECH ile Neler Yapıldı?
+            </h2>
+            <p class="text-xl text-center text-gray-400 mb-12 max-w-3xl mx-auto">
+                PYTOMECH modüllerini kullanan geliştiricilerin ve şirketlerin hayata geçirdiği bazı örnek uygulamalar.
+            </p>
+            
+            <!-- Proje Kartları İçin Alan -->
+            <div id="project-list" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Proje Kartları JS ile buraya eklenecek -->
+            </div>
+
+            <div class="text-center mt-12">
+                <button onclick="document.getElementById('contact-message-topluluk').textContent = 'Yeni proje ekleme formu simülasyonu çalıştı. Gerçek bir sistemde bu kısım bir form açardı.'; document.getElementById('contact-message-topluluk').classList.remove('hidden'); setTimeout(() => {document.getElementById('contact-message-topluluk').classList.add('hidden');}, 5000);" 
+                        class="inline-block bg-neon-green hover:bg-green-500 text-gray-900 font-bold py-3 px-8 rounded-full shadow-lg transition duration-300 transform hover:scale-105 border-2 border-neon-green">
+                    Siz de Projenizi Ekleyin!
+                </button>
+                <p id="contact-message-topluluk" class="mt-4 text-center text-sm font-medium hidden text-neon-green"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Vurgu Bölümü (Canlı Grafik) -->
+    <section id="dashboard" class="py-16 md:py-24 bg-black text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h3 class="text-4xl font-extrabold mb-4 text-neon-green">
+                KODLA HAYATA GEÇİR: ANLIK ÜRETİM DASHBOARDLARI
+            </h3>
+            <p class="text-xl font-light mb-8 max-w-3xl mx-auto text-gray-400">
+                PYTOMECH modülleri, topladığı ve analiz ettiği verileri anlık olarak takip edebileceğiniz modern ve responsive dashboard'lar oluşturmanız için araçlar sunar. KPI'larınızı (PI) saniyeler içinde izleyin.
+            </p>
+            
+            <!-- Canlı Dashboard Alanı -->
+            <div class="bg-gray-900 p-4 md:p-8 rounded-xl shadow-2xl inline-block border-2 border-neon-green/50 w-full max-w-5xl mx-auto">
+                <h4 class="text-2xl font-bold mb-4 text-gray-100">Simülasyon: Anlık Üretim Hızı (PI)</h4>
+                <div class="relative h-64 md:h-96">
+                    <!-- Chart.js için canvas elementi -->
+                    <canvas id="liveProductionChart"></canvas>
+                </div>
+                <!-- Anahtar Performans Göstergeleri (KPI Kartları) -->
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-8 text-center">
+                    <div class="kpi-card">
+                        <p class="text-sm text-gray-400">Anlık OEE</p>
+                        <p id="kpi-oee" class="text-2xl font-bold text-neon-green">--%</p>
+                    </div>
+                    <div class="kpi-card">
+                        <p class="text-sm text-gray-400">Kullanılabilirlik</p>
+                        <p id="kpi-availability" class="text-2xl font-bold text-cyan-400">--%</p>
+                    </div>
+                    <div class="kpi-card">
+                        <p class="text-sm text-gray-400">Performans</p>
+                        <p id="kpi-performance" class="text-2xl font-bold text-yellow-400">--%</p>
+                    </div>
+                    <div class="kpi-card">
+                        <p class="text-sm text-gray-400">Kalite Oranı</p>
+                        <p id="kpi-quality" class="text-2xl font-bold text-fuchsia-400">--%</p>
+                    </div>
+                </div>
+            </div>
+            
+            <p class="mt-8 text-lg font-medium text-gray-500">
+                Veri Otomasyonu &rarr; PI Hesaplama &rarr; Anlık Dashboard. (Veriler her saniye güncellenmektedir)
+            </p>
+        </div>
+    </section>
+
+    <!-- Geliştirici (Yusuf Yeşil) Bölümü -->
+    <section id="hakkimda" class="py-16 md:py-24 bg-gray-900 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center gap-10">
+            
+            <!-- Sol: Geliştirici Resmi (Yusuf Yeşil) -->
+            <div class="w-full md:w-1/3 flex justify-center">
+                <img src="https://placehold.co/256x256/374151/ffffff?text=Yusuf+Yesil" 
+                     alt="Yusuf Yeşil - PYTOMECH Geliştiricisi" 
+                     class="rounded-full w-64 h-64 object-cover border-4 border-neon-green shadow-xl shadow-neon-green/30 transition-shadow duration-300 hover:shadow-2xl hover:shadow-neon-green/50"
+                     loading="lazy">
+            </div>
+
+            <!-- Sağ: Metin -->
+            <div class="w-full md:w-2/3 text-center md:text-left">
+                <h2 class="text-4xl font-extrabold text-white mb-6">
+                    Geliştirici: Yusuf Yeşil
+                </h2>
+                <p class="text-xl font-semibold text-neon-green mb-4">
+                    "Engineered in Code."
+                </p>
+                <p class="text-gray-300 text-lg mb-4 leading-relaxed">
+                    PYTOMECH, **Yusuf Yeşil**'in Endüstriyel Yazılım ve Otomasyon deneyimini temel alarak başlattığı kişisel bir platformdur. Amacımız, geliştiricilerin fikirlerini endüstriyel çözümlere dönüştürmesi için gereken güçlü, Python tabanlı araç setini sunmaktır.
+                </p>
+                <p class="text-gray-300 text-lg mb-6 leading-relaxed">
+                    Platform, Veri Otomasyonu, Kalite Analizi, Üretim PI'ları ve Anlık Dashboard oluşturma süreçlerini basitleştirir.
+                </p>
+                <a href="mailto:info@pytomech.com" class="text-neon-green font-semibold hover:text-green-500 transition duration-300 flex items-center justify-center md:justify-start">
+                    Yusuf Yeşil ile İletişime Geçin
+                    <i data-lucide="mail" class="w-5 h-5 ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Topluluk ve İletişim Bölümü -->
+    <section id="iletisim" class="py-16 md:py-24 bg-gray-800 border-t border-gray-700">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 class="text-4xl font-extrabold text-center text-white mb-12">
+                Topluluğa Katılın ve İşbirliği Yapın
+            </h2>
+            
+            <div class="p-8 rounded-xl shadow-2xl contact-box">
+                <p class="text-lg text-gray-400 text-center mb-6">
+                    PYTOMECH'e katkı sağlamak veya endüstriyel yazılım hakkında konuşmak için bize ulaşın.
+                </p>
+
+                <form onsubmit="handleContact(event)">
+                    
+                    <div class="mb-6">
+                        <label for="name" class="block text-sm font-medium text-gray-300 mb-2">Adınız</label>
+                        <input type="text" id="name" name="name" required 
+                               class="w-full contact-input" 
+                               placeholder="Adınız Soyadınız">
+                    </div>
+
+                    <div class="mb-6">
+                        <label for="email" class="block text-sm font-medium text-gray-300 mb-2">E-posta Adresiniz</label>
+                        <input type="email" id="email" name="email" required 
+                               class="w-full contact-input" 
+                               placeholder="eposta@adresi.com">
+                    </div>
+                    
+                    <div class="mb-6">
+                        <label for="message" class="block text-sm font-medium text-gray-300 mb-2">Mesajınız / Katkı Öneriniz</label>
+                        <textarea id="message" name="message" rows="5" required 
+                                  class="w-full contact-input" 
+                                  placeholder="Nasıl bir katkı sağlamak istiyorsunuz?"></textarea>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full bg-neon-green hover:bg-green-500 text-gray-900 font-bold py-3 rounded-lg shadow-md transition duration-300 transform hover:scale-[1.01]">
+                        Mesaj Gönder
+                    </button>
+                    
+                    <p id="contact-message" class="mt-4 text-center text-sm font-medium hidden"></p>
+                </form>
+            </div>
+            
+            <!-- Doğrudan İletişim Bilgileri (Yusuf Yeşil) -->
+            <div class="mt-12 text-center">
+                <p class="text-xl text-gray-200 font-semibold mb-2">Doğrudan Yusuf Yeşil'e Ulaşın:</p>
+                <div class="flex justify-center space-x-6 text-gray-400">
+                    <a href="mailto:info@pytomech.com" class="hover:text-neon-green transition duration-300 flex items-center">
+                        <i data-lucide="mail" class="w-6 h-6 mr-1"></i>
+                        info@pytomech.com
+                    </a>
+                    <!-- GitHub Linki -->
+                    <a href="https://github.com/pytomech-repo" target="_blank" class="hover:text-neon-green transition duration-300 flex items-center">
+                        <svg class="w-6 h-6 mr-1" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.344.726-4.043-1.61-4.043-1.61-.546-1.385-1.332-1.755-1.332-1.755-1.087-.745.084-.73.084-.73 1.205.085 1.838 1.238 1.838 1.238 1.07 1.835 2.809 1.305 3.493.996.108-.775.419-1.305.762-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-.573.13-.195 0 0 1.005-.325 3.303 1.23.957-.266 1.983-.4 3.003-.404 1.02.004 2.046.138 3.003.404 2.298-1.555 3.303-1.23 3.303-1.23.67.378.25.078.129.195.77.84 1.235 1.91 1.235 3.22 0 4.61-2.804 5.62-5.475 5.922.43.37.82 1.12.82 2.25 0 1.62-.015 2.924-.015 3.32c0 .317.218.687.82.578C20.565 21.8 24 17.302 24 12c0-6.627-5.373-12-12-12z" clip-rule="evenodd"/></svg>
+                        GitHub Deposu
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-gray-500 py-8 border-t border-gray-700">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">Geliştirici Platformu | &copy; 2024 PYTOMECH - Yusuf Yeşil. Tüm Hakları Saklıdır. | Engineered in Code.</p>
+        </div>
+    </footer>
+
+    <!-- MODAL (Modül Detay Kutusu) -->
+    <div id="module-modal" class="modal-overlay">
+        <div class="modal-content-box">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+            <h3 id="modal-title" class="text-3xl font-extrabold text-white mb-4 border-b pb-2 border-neon-green/50"></h3>
+            
+            <p id="modal-description" class="text-lg text-gray-300 mb-6 leading-relaxed"></p>
+
+            <h4 class="text-2xl font-bold text-gray-200 mb-3 flex items-center">
+                <i data-lucide="zap" class="w-6 h-6 mr-2 text-neon-green"></i> Temel Özellikler
+            </h4>
+            <ul id="modal-features" class="list-disc list-inside text-gray-300 mb-8 ml-4 grid grid-cols-1 md:grid-cols-2 gap-2">
+                <!-- Özellikler buraya eklenecek -->
+            </ul>
+
+            <h4 class="text-2xl font-bold text-gray-200 mb-3 flex items-center">
+                <i data-lucide="code" class="w-6 h-6 mr-2 text-neon-green"></i> Kodla Hayata Geçir (Python Örneği)
+            </h4>
+            <pre id="modal-code" class="code-snippet"></pre>
+            <p class="mt-4 text-sm text-gray-500">PYTOMECH modülleri ile hızlı entegrasyon.</p>
+
+        </div>
+    </div>
+
+    <!-- JavaScript Fonksiyonları -->
+    <script>
+        // Lucide ikonlarını yükle
+        lucide.createIcons();
+
+        // =================================================================
+        // VERİ YAPILARI (Gerçekçi Simülasyon Verileri)
+        // =================================================================
+
+        // Modül verilerini tutan yapı
+        const moduleData = {
+            'quality': {
+                title: 'Kalite Kontrolü & Yapay Zeka (AI/ML)',
+                description: 'Python’ın OpenCV, PyTorch/TensorFlow gibi kütüphaneleri temel alınarak geliştirilmiş modüller. Üretim bandındaki hataları, çatlakları ve montaj eksiklerini yapay zeka (Görüntü İşleme, Sınıflandırma Modelleri) ile %99 doğrulukla tespit eder. Yüksek hızlı kamera sistemleri ve robotik kollar ile entegrasyona olanak tanır.',
+                features: ['Derin Öğrenme Tabanlı Defect Tespiti', 'Gerçek Zamanlı Boyut ve Tolerans Ölçümü', 'Anomali Tespiti (Titresim/Akım Verisi)', 'Optik Karakter Doğrulama (OCV) Entegrasyonu'],
+                code: `from pytomech.vision import QC_Vision
+from pytomech.ml import ModelLoader
+
+# Derin öğrenme modelini yükle (Örn: Palet çatlak tespiti)
+model = ModelLoader(path='./models/defect_detector_v3.pt')
+
+# Üretim bandından anlık görüntüyü işle
+camera_feed = QC_Vision.capture_image()
+detection_result = model.predict(camera_feed)
+
+if detection_result['defect_confidence'] > 0.90:
+    print("KALİTE HATASI! Red Sinyali Gönderiliyor.") 
+    # PLC Haberleşme Modülü ile red sinyali gönderilebilir
+else:
+    print("Ürün Onaylandı.")`
+            },
+            'data': {
+                title: 'Veri Haberleşmesi & PLC Entegrasyonu',
+                description: 'Python’ın minimal ve güvenilir kütüphaneleri (bsp-modbus, python-opcua) kullanılarak geliştirilmiştir. Fabrika ortamındaki PLC’ler (Siemens, Allen Bradley vb.), sensörler ve SCADA sistemlerinden anlık veri çekme, komut gönderme ve veri doğrulama işlemleri için tasarlanmıştır. Tüm endüstriyel protokolleri (Modbus TCP/IP, OPC UA, S7) destekler.',
+                features: ['Modbus TCP/IP ve RTU Okuma/Yazma', 'OPC UA Server/Client Desteği', 'Makine Verisi Doğrulama ve Yönlendirme', 'CNC Makine Kod (G-Code) Entegrasyonu'],
+                code: `from pytomech.comms import DataClient
+import time
+
+# CNC makinesine bağlan (Modbus TCP)
+cnc = DataClient(ip='10.0.1.50', protocol='Modbus')
+
+# Ana üretim döngüsü
+while True:
+    # Freze ucu sıcaklığını oku (Tag adını kullan)
+    tool_temp = cnc.read_tag('TOOL_TEMP') 
+    
+    if tool_temp > 85.0:
+        print(f"UYARI: Sıcaklık yüksek ({tool_temp}°C). Hız düşürülüyor.")
+        # Freze besleme hızını düşür (örneğin %50)
+        cnc.write_tag('FEED_RATE_PERCENT', 50) 
+        
+    time.sleep(1)`
+            },
+            'oee': {
+                title: 'KPI/PI Hesaplama & Tahminsel Analiz',
+                description: 'Python’ın veri analizi kütüphaneleri (Pandas, NumPy) ve zaman serisi analizi araçları temel alınmıştır. OEE (Kullanılabilirlik, Performans, Kalite) gibi temel PI’ları (Üretim Performans Göstergeleri) gerçek zamanlı olarak hesaplar. Ayrıca, Makine Öğrenimi (ML) ile arıza, duruş veya kalite kaybı gibi durumları önceden tahmin etmek için araçlar sunar.',
+                features: ['Gerçek Zamanlı OEE ve Duruş Analizi', 'Pandas ile Zaman Serisi Veri Yönetimi', 'CNC Takım Ömrü Tahmini (Predictive Maintenance)', 'Kapasite Planlama ve Simülasyon'],
+                code: `from pytomech.analysis import KPI_Analyzer
+from pytomech.data import InfluxDBClient
+
+# Geçmiş üretim verilerini çek (Simülasyon: InfluxDB)
+db_client = InfluxDBClient(bucket='production_data')
+data_df = db_client.query_range(tag='CNC_OEE_DATA', last='24h') 
+
+analyzer = KPI_Analyzer(data_df)
+# Tahminsel Analiz: 4 saat içinde arıza olasılığını tahmin et
+failure_risk = analyzer.predict_failure_risk(hours=4)
+
+print(f"24 Saatlik Ortalama OEE: {analyzer.calculate_average_oee()} %")
+print(f"Önümüzdeki 4 saat içinde arıza riski: %{parseInt(failure_risk * 100)}.")`
+            },
+            'dash': {
+                title: 'Veri Görselleştirme & Web Dashboard\'lar',
+                description: 'Python’ın web framework’leri (Flask, Django, Streamlit, Plotly Dash) ve veri görselleştirme kütüphaneleri (Matplotlib, Plotly) ile uyumlu modüller. Toplanan ve analiz edilen endüstriyel verileri modern, mobil uyumlu ve anlık olarak güncellenen web tabanlı arayüzlerde gösterir. SQL, NoSQL ve Zaman Serisi veritabanlarıyla tam entegrasyon sağlar.',
+                features: ['Websocket Destekli Anlık Veri Akışı', 'Plotly ve Dash ile Interaktif Grafikler', 'Kullanıcı Yetkilendirme ve Güvenlik', 'Üretim Verimlilik Raporları Oluşturma'],
+                code: `from pytomech.dashboard import WebDashboard
+from pytomech.data import PostgreSQLClient
+
+# PostgreSQL veritabanından son 100 kaydı çek
+data = PostgreSQLClient.get_latest_data(table='production_log', limit=100)
+
+# Dashboard objesi oluştur ve veriyi yükle
+dashboard = WebDashboard(title='CNC Makine Takip Panosu')
+dashboard.add_line_chart(
+    data=data,
+    x_axis='timestamp',
+    y_axis='tool_temp',
+    title='Takım Sıcaklığı Trendi'
+)
+
+dashboard.run(port=5000) # Dashboard'u yayınla
+print("Web Dashboard http://localhost:5000 adresinde yayında.")`
+            }
+        };
+
+        // Proje verilerini tutan yapı (Gerçekçi örnekler)
+        const projectData = [
+            {
+                name: "CNC Takım Ömrü Tahmini ve Besleme Hızı Optimizasyonu",
+                developer: "OtoTech Çözümleri",
+                modules: ["Data", "Quality", "OEE"],
+                description: "CNC makine titreşim, akım ve sıcaklık verilerini okuyarak (Data), makine öğrenimi ile takım aşınma seviyesini tahmin eden (OEE) ve kritik durumlarda makinenin besleme hızını otomatik düşüren (Data/Quality) akıllı sistem.",
+                link: "#"
+            },
+            {
+                name: "Tam Otomatik Palet Hata Tespiti ve Red Sistemi",
+                developer: "Tekno-Üretim A.Ş.",
+                modules: ["Quality", "Data"],
+                description: "Yapay zeka (Görüntü İşleme) ile paletler üzerindeki çatlakları ve eksik parçaları %99 doğrulukla tespit eden ve PLC’ye otomatik red sinyali gönderen, anlık veri doğrulaması yapan entegre sistem.",
+                link: "#"
+            },
+            {
+                name: "Enerji Verimliliği ve PUE (Power Usage Effectiveness) Dashboard'u",
+                developer: "Yeşil Enerji Grubu",
+                modules: ["Data", "OEE", "Dash"],
+                description: "Tüm enerji sayaçlarından Modbus ile anlık veri toplayıp (Data), gerçek zamanlı PUE ve maliyet analizlerini (OEE) hesaplayan ve web tabanlı bir dashboard (Dash) üzerinden izlenebilir kılan enerji yönetim sistemi.",
+                link: "#"
+            }
+        ];
+
+        // =================================================================
+        // GÖRÜNÜM FONKSİYONLARI
+        // =================================================================
+
+        // Mobil Menü Açma/Kapama
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+        const body = document.body;
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+            // Menü açıkken sayfanın kaymasını engelle
+            if (!mobileMenu.classList.contains('hidden')) {
+                body.style.overflow = 'hidden';
+            } else {
+                body.style.overflow = 'auto';
+            }
+        });
+
+        function closeMobileMenu() {
+            mobileMenu.classList.add('hidden');
+            body.style.overflow = 'auto';
+        }
+
+        // Proje Listesini HTML'e Ekleme
+        function renderProjects() {
+            const listElement = document.getElementById('project-list');
+            listElement.innerHTML = ''; // İçeriği temizle
+
+            projectData.forEach(project => {
+                const card = document.createElement('div');
+                card.className = 'project-card p-6 rounded-xl flex flex-col justify-between h-full';
+
+                // Modül etiketlerini oluştur
+                const moduleTags = project.modules.map(mod => 
+                    `<span class="inline-block bg-gray-700 text-neon-green text-xs font-semibold px-2.5 py-0.5 rounded-full mr-1 border border-neon-green/30">${mod}</span>`
+                ).join('');
+
+                card.innerHTML = `
+                    <div>
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="text-xl font-bold text-white">${project.name}</h3>
+                            <i data-lucide="building-2" class="w-6 h-6 text-neon-green"></i>
+                        </div>
+                        <p class="text-sm text-gray-500 mb-4">${project.developer}</p>
+                        <p class="text-gray-300 text-base mb-4">${project.description}</p>
+                    </div>
+                    <div>
+                        <div class="mb-4">${moduleTags}</div>
+                        <a href="${project.link}" onclick="alert('Bu bir simülasyon bağlantısıdır.')" class="text-neon-green hover:text-green-500 font-semibold flex items-center transition duration-300">
+                            Detaylı İncele 
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-1"></i>
+                        </a>
+                    </div>
+                `;
+                listElement.appendChild(card);
+            });
+            lucide.createIcons(); // Yeni ikonları oluştur
+        }
+
+        // Modül Detay Modal Fonksiyonları
+        const modalOverlay = document.getElementById("module-modal");
+
+        function highlightCode(code) {
+            // Python sözdizimi vurgulama simülasyonu
+            code = code.replace(/#.*$/gm, '<span class="comment">$&</span>'); // Yorumlar
+            code = code.replace(/^(from|import|if|else|while|True|except|print)\b/gm, '<span class="keyword">$&</span>');
+            code = code.replace(/\b(QC_Vision|DataClient|KPI_Analyzer|WebDashboard|ModelLoader|InfluxDBClient|PostgreSQLClient|capture_image|predict|read_tag|write_tag|calculate_average_oee|predict_failure_risk|get_latest_data|add_line_chart|run|query_range)\b/g, '<span class="function">$&</span>');
+            code = code.replace(/('.*?')/g, '<span class="string">$&</span>');
+            code = code.replace(/\b(model|detection_result|cnc|tool_temp|analyzer|failure_risk|dashboard|data|time)\b/g, '<span class="variable">$&</span>');
+            return code;
+        }
+
+        function openModal(moduleId) {
+            const data = moduleData[moduleId];
+            if (!data) return;
+
+            // 1. Başlık, Açıklama ve Özellikleri Ekle
+            document.getElementById('modal-title').textContent = data.title;
+            document.getElementById('modal-description').textContent = data.description;
+            
+            const featuresList = document.getElementById('modal-features');
+            featuresList.innerHTML = '';
+            data.features.forEach(feature => {
+                const li = document.createElement('li');
+                li.className = 'flex items-center text-base';
+                li.innerHTML = `<i data-lucide="check-circle" class="w-4 h-4 mr-2 text-neon-green"></i> ${feature}`;
+                featuresList.appendChild(li);
+            });
+
+            // 2. Kodu Ekle ve Vurgula
+            const codeBlock = document.getElementById('modal-code');
+            codeBlock.innerHTML = highlightCode(data.code);
+
+            // 3. Lucide ikonlarını yeniden oluştur
+            lucide.createIcons();
+
+            // 4. Modalı göster ve body kaydırmasını engelle
+            modalOverlay.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; 
+        }
+
+        function closeModal() {
+            modalOverlay.style.display = 'none';
+            document.body.style.overflow = 'auto'; 
+        }
+
+        // Modal'ın dışına tıklanınca kapatma
+        window.onclick = function(event) {
+            if (event.target == modalOverlay) {
+                closeModal();
+            }
+        }
+
+        // İletişim Formu İşleyicisi
+        function handleContact(event) {
+            event.preventDefault(); 
+            
+            const form = event.target;
+            const name = form.name.value;
+            const contactMessage = document.getElementById("contact-message");
+            
+            // Basit bir onay mesajı göster
+            contactMessage.textContent = `Teşekkürler, ${name}! Mesajınız Yusuf Yeşil'e iletildi. (Simülasyon)`;
+            contactMessage.classList.remove('hidden');
+            contactMessage.classList.add('text-neon-green');
+            
+            // Formu temizle
+            form.reset();
+            
+            // Mesajı 5 saniye sonra gizle
+            setTimeout(() => {
+                contactMessage.classList.add('hidden');
+            }, 5000);
+        }
+
+        // =================================================================
+        // DASHBOARD FONKSİYONLARI (Gerçek Zamanlı Simülasyon)
+        // =================================================================
+        let liveChart;
+        const MAX_DATA_POINTS = 20; // Grafikte gösterilecek maksimum veri noktası
+
+        // KPI'ları rastgele değerlerle günceller
+        function updateKPIs(oee, availability, performance, quality) {
+            document.getElementById('kpi-oee').textContent = `${oee.toFixed(1)}%`;
+            document.getElementById('kpi-availability').textContent = `${availability.toFixed(1)}%`;
+            document.getElementById('kpi-performance').textContent = `${performance.toFixed(1)}%`;
+            document.getElementById('kpi-quality').textContent = `${quality.toFixed(1)}%`;
+        }
+
+        // Rastgele üretim hızı değeri üretir
+        function generateProductionValue(baseValue, fluctuation) {
+            return Math.min(100, Math.max(0, baseValue + (Math.random() - 0.5) * fluctuation));
+        }
+
+        // Grafiği ve KPI'ları güncelleyen ana döngü
+        function updateChart() {
+            // Anlık zaman etiketi
+            const now = new Date();
+            const timeLabel = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+            // Simülasyon verileri
+            const newAvailability = generateProductionValue(90, 8); // %90 civarında kullanılabilirlik
+            const newPerformance = generateProductionValue(85, 10); // %85 civarında performans
+            const newQuality = generateProductionValue(95, 5); // %95 civarında kalite
+            
+            // OEE hesaplaması (Kullanılabilirlik * Performans * Kalite)
+            const newOEE = (newAvailability / 100) * (newPerformance / 100) * (newQuality / 100) * 100;
+
+            // KPI'ları güncelle
+            updateKPIs(newOEE, newAvailability, newPerformance, newQuality);
+
+            // Veri ve etiketleri güncelle
+            const chartData = liveChart.data.datasets[0].data;
+            const chartLabels = liveChart.data.labels;
+
+            // Yeni veriyi ekle
+            chartLabels.push(timeLabel);
+            chartData.push(newOEE);
+            
+            // Maksimum veri noktası sayısını koru (grafiği akışkan tutar)
+            if (chartLabels.length > MAX_DATA_POINTS) {
+                chartLabels.shift();
+                chartData.shift();
+            }
+
+            // Grafiği yeniden çiz
+            liveChart.update('quiet');
+        }
+
+
+        // Dashboard'u başlatan fonksiyon
+        function initDashboard() {
+            // 1. Projeleri Render Et
+            renderProjects(); 
+
+            // 2. Chart'ı Başlat
+            const ctx = document.getElementById('liveProductionChart').getContext('2d');
+            
+            // Chart.js kurulumu - Koyu temaya uygun renkler ve fontlar
+            liveChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [], // Başlangıçta boş zaman etiketleri
+                    datasets: [{
+                        label: 'Anlık OEE (%)',
+                        data: [], // Başlangıçta boş veri
+                        borderColor: '#00ff66', // Neon Yeşil
+                        backgroundColor: 'rgba(0, 255, 102, 0.2)',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        tension: 0.3,
+                        fill: true,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Zaman Akışı',
+                                color: '#a0a0a0'
+                            },
+                            ticks: {
+                                color: '#e0e0e0'
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'OEE (%)',
+                                color: '#a0a0a0'
+                            },
+                            min: 0,
+                            max: 100,
+                            ticks: {
+                                color: '#e0e0e0',
+                                callback: function(value) {
+                                    return value + "%";
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.1)'
+                            }
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true,
+                            labels: {
+                                color: '#e0e0e0'
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.y !== null) {
+                                        label += context.parsed.y.toFixed(2) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Grafiği ve verileri 1 saniyede bir güncelle
+            setInterval(updateChart, 1000);
+
+            // Başlangıçta bir kere çalıştır
+            updateChart(); 
+        }
+
+        // Sayfa yüklendikten sonra initDashboard fonksiyonu çalışacak (body onload ile)
+    </script>
+</body>
+</html>
